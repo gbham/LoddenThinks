@@ -1,7 +1,7 @@
 <template>
   <div>   
       
-    <button ref="loodenBtn" style="display:none" v-on:click="setLooden()">Looden</button> 
+    <button ref="loddenBtn" style="display:none" v-on:click="setlodden()">lodden</button> 
     <br>
     <button ref="player1Btn" style="display:none" v-on:click="setPlayer1()">Player1</button>  
     <br>    
@@ -33,7 +33,7 @@
         </textarea>  
         <br>             
         <textarea 
-            ref="loodenAnswerInput" 
+            ref="loddenAnswerInput" 
             width="1920" 
             height="1080" 
             wrap=hard          
@@ -122,15 +122,15 @@
             
             this.listOfPlayersDisplay = this.$refs.listOfPlayersDisplay;
 
-            this.loodenBtn = this.$refs.loodenBtn;
+            this.loddenBtn = this.$refs.loddenBtn;
             this.player1Btn = this.$refs.player1Btn; 
             this.player2Btn = this.$refs.player2Btn; 
             this.player1NameField = this.$refs.player1NameField;
             this.player2NameField = this.$refs.player2NameField;
-            this.loodenNameField = this.$refs.loodenNameField;
+            this.loddenNameField = this.$refs.loddenNameField;
 
             this.questionDisplay = this.$refs.questionDisplay;
-            this.loodenAnswerInput = this.$refs.loodenAnswerInput;
+            this.loddenAnswerInput = this.$refs.loddenAnswerInput;
             this.setQuestionBtn = this.$refs.setQuestionBtn;
             this.textDisplay = this.$refs.textDisplay;
             this.textInput = this.$refs.textInput;
@@ -160,11 +160,11 @@
                 
             });            
 
-            this.socket.on("loodenIs", (name) => {  
+            this.socket.on("loddenIs", (name) => {  
                 this.listOfPlayersDisplay.style.display = "initial";   
-                this.listOfPlayersDisplay.value += name + " is Looden\n";
-                this.loodenBtn.style.display = "none";  
-                this.loodenNameField.style.display = "none"; 
+                this.listOfPlayersDisplay.value += name + " is lodden\n";
+                this.loddenBtn.style.display = "none";  
+                this.loddenNameField.style.display = "none"; 
 
             });
 
@@ -184,15 +184,15 @@
 
             this.socket.on("hidePlayerSelectionControls", () => {     
                 
-                this.loodenBtn.style.display = "none";                  
+                this.loddenBtn.style.display = "none";                  
                 this.player1Btn.style.display = "none";  
                 this.player2Btn.style.display = "none";  
             });
 
-            this.socket.on("askLoodenForQuestionAndAnswer", () => {     
+            this.socket.on("askloddenForQuestionAndAnswer", () => {     
                                    
                 this.questionDisplay.style.display = "block"; 
-                this.loodenAnswerInput.style.display = "block";
+                this.loddenAnswerInput.style.display = "block";
                 this.setQuestionBtn.style.display = "block";                 
             });
 
@@ -202,7 +202,7 @@
                 this.questionDisplay.style.display = "block";   
                 this.questionDisplay.value = "Q: " + question;
                 this.questionDisplay.readOnly = "true";
-                this.loodenAnswerInput.readOnly = "true";
+                this.loddenAnswerInput.readOnly = "true";
             });
 
             this.socket.on("showPlayerControls", () => {     
@@ -219,7 +219,7 @@
                 this.settleBtn.style.display = "none";
             });
 
-            this.socket.on("declareWinner", (direction, winningName, winningGuess, loodenAnswer) => {
+            this.socket.on("declareWinner", (direction, winningName, winningGuess, loddenAnswer) => {
                
                 if(direction == "theUnder")
                 {
@@ -230,7 +230,7 @@
                     this.textDisplay.value = "\nThe winner is: " + winningName + ", with [" + winningGuess + "] and over";
                 }
 
-                this.textDisplay.value += "\n\nLooden thought: " + loodenAnswer;
+                this.textDisplay.value += "\n\nlodden thought: " + loddenAnswer;
             });                          
 
             this.socket.on("printPlayers", (players) => {              
@@ -264,7 +264,7 @@
             });
 
             this.socket.on("showRoleSelectionControls", () => {               
-                this.loodenBtn.style.display = "block";
+                this.loddenBtn.style.display = "block";
                 this.player1Btn.style.display = "block";            
                 this.player2Btn.style.display = "block";
             });            
@@ -295,8 +295,8 @@
                 this.socket.emit("settle");
             },
 
-            setLooden() {                
-                this.socket.emit("assignLooden");
+            setlodden() {                
+                this.socket.emit("assignlodden");
             },
 
             setPlayer1() {                
@@ -309,7 +309,7 @@
 
             setQuestionAndAnswer() {
                 var question = this.$refs.questionDisplay.value;
-                var answer = this.$refs.loodenAnswerInput.value;                
+                var answer = this.$refs.loddenAnswerInput.value;                
 
                 this.socket.emit("setQuestionAndAnswer", question, answer);
             },

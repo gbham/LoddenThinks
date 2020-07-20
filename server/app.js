@@ -18,8 +18,8 @@ Socketio.on("connection", socket => {
 
         // switch(socket)
         // {
-        //     case looden.socket:
-        //         Socketio.emit("playerDisconnected", looden.name);
+        //     case lodden.socket:
+        //         Socketio.emit("playerDisconnected", lodden.name);
         //         break;
             
         //     case player1.socket:
@@ -89,11 +89,11 @@ Socketio.on("connection", socket => {
 
         var player1Index = GetPlayerIndexInGrp(groupIndex, "player1");
         var player2Index = GetPlayerIndexInGrp(groupIndex, "player2");
-        var loodenIndex = GetPlayerIndexInGrp(groupIndex, "looden");
+        var loddenIndex = GetPlayerIndexInGrp(groupIndex, "lodden");
 
         var player1 = groups[groupIndex][player1Index];
         var player2 = groups[groupIndex][player2Index];
-        var looden = groups[groupIndex][loodenIndex];      
+        var lodden = groups[groupIndex][loddenIndex];      
 
         var underPlayer;
         var overPlayer;
@@ -114,11 +114,11 @@ Socketio.on("connection", socket => {
             overPlayer = player1;            
         }        
 
-        if(underPlayer.guess > looden.answer) 
+        if(underPlayer.guess > lodden.answer) 
         {
             for(var i = 0; i < desiredGrpSockets.length; i++)
             {                
-                desiredGrpSockets[i].socket.emit("declareWinner", "theUnder", underPlayer.name, underPlayer.guess, looden.answer);
+                desiredGrpSockets[i].socket.emit("declareWinner", "theUnder", underPlayer.name, underPlayer.guess, lodden.answer);
                 desiredGrpSockets[i].socket.emit("hidePlayerControls");
             } 
         }
@@ -126,20 +126,20 @@ Socketio.on("connection", socket => {
         {
             for(var i = 0; i < desiredGrpSockets.length; i++)
             {                
-                desiredGrpSockets[i].socket.emit("declareWinner", "theOver", overPlayer.name, overPlayer.guess, looden.answer);
+                desiredGrpSockets[i].socket.emit("declareWinner", "theOver", overPlayer.name, overPlayer.guess, lodden.answer);
                 desiredGrpSockets[i].socket.emit("hidePlayerControls");
             } 
         }
 
-        looden.gameover = true;
+        lodden.gameover = true;
     });        
 
-    //This function assigns the looden role to the appropiate player and then relays that info to the rest of the group
-    socket.on("assignLooden", () => {            
+    //This function assigns the lodden role to the appropiate player and then relays that info to the rest of the group
+    socket.on("assignlodden", () => {            
                     
         socket.emit("hidePlayerSelectionControls");  
         
-        var loodenName; 
+        var loddenName; 
         var groupIndex;
 
         //Finding out what user is "socket" in this function
@@ -151,10 +151,10 @@ Socketio.on("connection", socket => {
                 if(groups[i][x].socketID == socket.id)
                 {                        
                     groupIndex = i;
-                    groups[i][x].role = "looden";
+                    groups[i][x].role = "lodden";
                     groups[i][x].ready = true;                        
 
-                    loodenName = groups[i][x].name;                     
+                    loddenName = groups[i][x].name;                     
                 }
             } 
         }
@@ -163,7 +163,7 @@ Socketio.on("connection", socket => {
 
         for(var i = 0; i < desiredGrpSockets.length; i++)
         {                
-            desiredGrpSockets[i].socket.emit("loodenIs", loodenName);
+            desiredGrpSockets[i].socket.emit("loddenIs", loddenName);
         }    
 
         //Its important that groups[groupIndex] is used instead of desiredGrpSockets, as desiredGrpSockets only contains sockets
@@ -260,11 +260,11 @@ Socketio.on("connection", socket => {
         var player1Socket = GetPlayerSocketFromRole(groupIndex, "player1");
         player1Socket.socket.emit("showPlayerControls");
 
-        var loodenIndex = GetPlayerIndexInGrp(groupIndex, "looden");
-        var looden = groups[groupIndex][loodenIndex];
+        var loddenIndex = GetPlayerIndexInGrp(groupIndex, "lodden");
+        var lodden = groups[groupIndex][loddenIndex];
 
-        looden.answer = answer;
-        looden.question = question;
+        lodden.answer = answer;
+        lodden.question = question;
             
     });
 
@@ -345,20 +345,20 @@ Socketio.on("connection", socket => {
         }            
     }
 
-    //If all roles have been assigned then commence game by asking Looden for a question and answer (group[0] is the group name)
+    //If all roles have been assigned then commence game by asking lodden for a question and answer (group[0] is the group name)
     function CheckIfPlayersAreReady(group)
     {
         if(group[1].ready==true && group[2].ready==true && group[3].ready==true)
         {   
             for(var i = 1; i < group.length; i++)
             {
-                if(group[i].role == "looden")                    
+                if(group[i].role == "lodden")                    
                 {                        
                     for(var x = 0; x < allSockets.length; x++)
                     {                            
                         if(group[i].socketID == allSockets[x].socket.id)
                         {                                
-                            allSockets[x].socket.emit("askLoodenForQuestionAndAnswer");
+                            allSockets[x].socket.emit("askloddenForQuestionAndAnswer");
                             break;                                
                         }
                     }
@@ -377,7 +377,7 @@ Socketio.on("connection", socket => {
             guess: 0,
             group: null,
             role: null,
-            question: null, //atm, only the looden player is getting the question assigned, keep this in mind
+            question: null, //atm, only the lodden player is getting the question assigned, keep this in mind
             gameover: false //not sure if I will even need this anymore
         };        
         
