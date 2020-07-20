@@ -1,0 +1,35 @@
+
+- Noticed this when looking at socket.io docs, will likely come in handy
+	-// sending with acknowledgement
+	-socket.emit('question', 'do you think so?', function (answer) {});
+- Handle the correct flow of what controls should be shown and hidden when
+	-Hide the group controls once someone has joined a group
+- Not sure I like "player.guess", should maybe just be "move" or "value", need to ensure code is as simple and readable as possible
+	
+- The reason for a separate allSockets[] array is since I cant send the socket to the client, although, im not sure if I need to send the whole player[] anymore, most of the time I am now sending, for example, just player.name. This would mean I could put socket back inside of the player array instead of using socketID and comparing with the allSockets[].socket.ID to find the desired socket
+- Maybe all socket.on("") in the server should just call a function like I have done with createPlayer/group, find out what is standard  
+- Using groupIndex wont work on a large scale, not sure how much traffic would cause the failure but in theory a group could be removed from the groups array at the same time that someone is adding a member to a different group within the groups array, this could cause a user to be added to the wrong group since the index is changed by another group mid execution
+- GetGroupName() may be redundant, keep an eye on. If no unique needs come up then GetGroupIndex() may be enough on its own (some changes would be needed but at the moment the GetGroupName() function only seems to be a means to an end to get the groupIndex)
+
+
+
+Desired features:
+
+- Log results/player/group data (Database)
+- Add the ability to start a new game after one is finished
+- Could be useful to keep a list of all moves server side, although only the most recent move for each player may do
+- Provide example questions (https://www.reddit.com/r/poker/comments/870v0d/whats_your_best_lodden_thinks_question/)
+- Informing group of disconnected users
+	-Must be a way to check if a current socket is connected, if not then just add something like player.connected = true and change this value at the 	time when a socket is disconnected.
+		-This will probs be the best way, I dont think there is a need to be scanning those arrays and checking for online sockets periodically when 		all sockets can be removed from the list right as they disconnect with the built in: socket.on("disconnect", () => { });
+- Notify player1/player2 when looden is inputting a question/answer
+- Make function SendToGroup(Group, emitMessage, params) (Will this even work??? Did I forget the emitMessage needs to be in quotation marks, a variable cant be used on its own with no quotation marks? Confirm this is true first.
+- The "settle" button should only be shown once the first player has made a prediction
+- Have a textarea at the top to show username
+- Add a instructions section
+- Validation needed for:
+	-Being able to click create player or group with no text entered
+	-Allowing a duplicate username/group to be created
+	-Allowing someone to join a group that doesnt exist or is full
+	-Decimals are valid
+	-User input accepting any type of character
