@@ -150,7 +150,7 @@
             // });
 
             this.socket.on("playerDisconnected", (playerName) => {
-                this.textDisplay.value += "\n" + playerName + " has disconnected";
+                this.textDisplay.value += "\n\nPlayer: " + playerName + " has disconnected";
             });
 
             this.socket.on("playerMove", (playerName, value) => {

@@ -14,23 +14,52 @@ Http.listen(3000, () => {
 
 Socketio.on("connection", socket => {    
 
+    //Getting the group will cause issues if they are not in a group yet, first thought is to just use the allSockets array to find the socket that disconnected, then, check if they are in a group. If they are then send out the message to the rest of the group
     socket.on("disconnect", () => {  
+          
+        var playerName;
+        var disPlayerGroupIndex = -1;
+        var disPlayerPosInGroup;
 
-        // switch(socket)
-        // {
-        //     case lodden.socket:
-        //         Socketio.emit("playerDisconnected", lodden.name);
-        //         break;
-            
-        //     case player1.socket:
-        //         Socketio.emit("playerDisconnected", player1.name);
-        //         break;
+        //Get the name of the disconnected player
+        for(var i = 0; i < allSockets.length; i++)
+        {                
+            if(allSockets[i].socket.id == socket.id)
+            {                
+                playerName = allSockets[i].name;
+            }
+        } 
 
-        //     case player2.socket:
-        //         Socketio.emit("playerDisconnected", player2.name);
-        //         break;
+        //If that player is in a group then get the groupIndex
+        for(var i = 0; i < groups.length; i++)
+        {                
+            for(var x = 1; x < groups[i].length; x++)
+            { 
+                if(groups[i][x].name == playerName)
+                {
+                    disPlayerGroupIndex = i;
+                    disPlayerPosInGroup = x;
 
-        // }
+                    //remove player from the group 
+                    groups[disPlayerGroupIndex].splice(disPlayerPosInGroup, 1);
+                }
+            }
+        } 
+
+        //If player is in group then message the remaining members that the player has disconnected
+        if(disPlayerGroupIndex != -1)
+        {            
+            var groupName = GetGroupName(socket); 
+
+            var groupIndex = GetGroupIndex(groupName);
+
+            var desiredGrpSockets = GetGroupSockets(groupIndex);
+
+            for(var i = 0; i < desiredGrpSockets.length; i++)
+            {                
+                desiredGrpSockets[i].socket.emit("playerDisconnected", playerName);            
+            }
+        }
     });
 
     //The input validation (only checking if player guess is higher than previous player guess) is done at client level for now
@@ -43,8 +72,8 @@ Socketio.on("connection", socket => {
 
         var desiredGrpSockets = GetGroupSockets(groupIndex);
 
-        var player1Socket = GetPlayerSocketFromRole(groupIndex, "player1");
-        var player2Socket = GetPlayerSocketFromRole(groupIndex, "player2");
+        var player1Socket = GetPlayerSocketByRole(groupIndex, "player1");
+        var player2Socket = GetPlayerSocketByRole(groupIndex, "player2");
 
         var player1Index = GetPlayerIndexInGrp(groupIndex, "player1");
         var player2Index = GetPlayerIndexInGrp(groupIndex, "player2");  
@@ -257,7 +286,7 @@ Socketio.on("connection", socket => {
             desiredGrpSockets[i].socket.emit("gameReady", question);
         }      
 
-        var player1Socket = GetPlayerSocketFromRole(groupIndex, "player1");
+        var player1Socket = GetPlayerSocketByRole(groupIndex, "player1");
         player1Socket.socket.emit("showPlayerControls");
 
         var loddenIndex = GetPlayerIndexInGrp(groupIndex, "lodden");
@@ -280,16 +309,22 @@ Socketio.on("connection", socket => {
         JoinGroup(socket, groupName);               
     });
     
-    function GetPlayerSocketFromRole(groupIndex, role)
+    function GetPlayerSocketByRole(groupIndex, role)
     {
         for(var i = 1; i < groups[groupIndex].length; i++)
         {
             for(var x = 0; x < allSockets.length; x++)
-            {                     
+            {       
+                console.log("groups[groupIndex][i].role = " + groups[groupIndex][i].role);
+                console.log("role = " + role);
+
                 if(groups[groupIndex][i].role == role)
                 {
+                    console.log("in here22---");
+
                     if(groups[groupIndex][i].socketID == allSockets[x].socket.id)
                     {
+                        
                         return allSockets[x];                            
                     }
                 }                    
@@ -297,7 +332,7 @@ Socketio.on("connection", socket => {
         }
     }
 
-    function GetPlayerSocketFromID(socketID)
+    function GetPlayerSocketByID(socketID)
     {
         for(var x = 0; x < allSockets.length; x++)
         {
@@ -404,7 +439,7 @@ Socketio.on("connection", socket => {
         var group = [groupName, player]; 
         groups.push(group);         
         
-        var playerSocket = GetPlayerSocketFromID(player.socketID)
+        var playerSocket = GetPlayerSocketByID(player.socketID)
 
         var groupIndex = GetGroupIndex(groupName);
 
