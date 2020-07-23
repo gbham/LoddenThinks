@@ -56,9 +56,12 @@ Socketio.on("connection", socket => {
             var desiredGrpSockets = GetGroupSockets(groupIndex);
 
             for(var i = 0; i < desiredGrpSockets.length; i++)
-            {                
-                desiredGrpSockets[i].socket.emit("playerDisconnected", playerName);            
+            {    
+                desiredGrpSockets[i].socket.emit("printGroup", groups[groupIndex]); 
+                desiredGrpSockets[i].socket.emit("playerDisconnected", playerName);
             }
+
+            ResetPlayerValuesToDefault(groupIndex);            
         }
     });
 
@@ -314,17 +317,11 @@ Socketio.on("connection", socket => {
         for(var i = 1; i < groups[groupIndex].length; i++)
         {
             for(var x = 0; x < allSockets.length; x++)
-            {       
-                console.log("groups[groupIndex][i].role = " + groups[groupIndex][i].role);
-                console.log("role = " + role);
-
+            {   
                 if(groups[groupIndex][i].role == role)
                 {
-                    console.log("in here22---");
-
                     if(groups[groupIndex][i].socketID == allSockets[x].socket.id)
-                    {
-                        
+                    {                        
                         return allSockets[x];                            
                     }
                 }                    
@@ -384,11 +381,11 @@ Socketio.on("connection", socket => {
     function CheckIfPlayersAreReady(group)
     {
         if(group[1].ready==true && group[2].ready==true && group[3].ready==true)
-        {   
+        {               
             for(var i = 1; i < group.length; i++)
             {
                 if(group[i].role == "lodden")                    
-                {                        
+                {  
                     for(var x = 0; x < allSockets.length; x++)
                     {                            
                         if(group[i].socketID == allSockets[x].socket.id)
@@ -512,6 +509,18 @@ Socketio.on("connection", socket => {
         }
 
         return desiredGrpSockets;
+    }
+
+    function ResetPlayerValuesToDefault(groupIndex)
+    {
+        for(var i = 1; i < groups[groupIndex].length; i++)
+        {    
+            groups[groupIndex][i].ready = false;
+            groups[groupIndex][i].guess = 0;
+            groups[groupIndex][i].role = null;
+            groups[groupIndex][i].question = null;
+            groups[groupIndex][i].gameover = null;
+        }   
     }
 });
 

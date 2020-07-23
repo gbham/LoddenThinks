@@ -1,7 +1,7 @@
 <template>
   <div>   
       
-    <button ref="loddenBtn" style="display:none" v-on:click="setlodden()">lodden</button> 
+    <button ref="loddenBtn" style="display:none" v-on:click="setlodden()">Lodden</button> 
     <br>
     <button ref="player1Btn" style="display:none" v-on:click="setPlayer1()">Player1</button>  
     <br>    
@@ -150,36 +150,52 @@
             // });
 
             this.socket.on("playerDisconnected", (playerName) => {
-                this.textDisplay.value += "\n\nPlayer: " + playerName + " has disconnected";
+                this.textDisplay.value += "\n\nPlayer: " + playerName + " has disconnected. The game has been abandoned.";
+
+                this.loddenBtn.style.display = "none";
+                this.player1Btn.style.display = "none"; 
+                this.player2Btn.style.display = "none";  
+
+                this.listOfPlayersDisplay.value = "";
+                this.listOfPlayersDisplay.style.display = "none";                  
+
+                this.questionDisplay.value = "";
+                this.loddenAnswerInput.value = "";
+                this.questionDisplay.style.display = "none"; 
+                this.loddenAnswerInput.style.display = "none";
+                this.setQuestionBtn.style.display = "none";
+
+                this.textInput.style.display = "none";
+                this.sendBtn.style.display = "none";
+                this.settleBtn.style.display = "none"; 
+                                
             });
 
             this.socket.on("playerMove", (playerName, value) => {
                 this.textDisplay.value += "\n\n"                 
                 this.textDisplay.value += playerName + " has selected under [" + value + "]";  
-                this.currentValue = value;             
+                this.currentValue = value;                            
                 
             });            
 
             this.socket.on("loddenIs", (name) => {  
                 this.listOfPlayersDisplay.style.display = "initial";   
                 this.listOfPlayersDisplay.value += name + " is lodden\n";
-                this.loddenBtn.style.display = "none";  
-                this.loddenNameField.style.display = "none"; 
-
+                this.loddenBtn.style.display = "none"; 
+                
+                
             });
 
             this.socket.on("player1Is", (name) => { 
                 this.listOfPlayersDisplay.style.display = "initial";                
                 this.listOfPlayersDisplay.value += name + " is Player1\n";                
                 this.player1Btn.style.display = "none";  
-                this.player1NameField.style.display = "none"; 
             });
             
             this.socket.on("player2Is", (name) => {      
                 this.listOfPlayersDisplay.style.display = "initial";          
                 this.listOfPlayersDisplay.value += name + " is Player2\n";
                 this.player2Btn.style.display = "none";  
-                this.player2NameField.style.display = "none"; 
             });
 
             this.socket.on("hidePlayerSelectionControls", () => {     
@@ -193,7 +209,11 @@
                                    
                 this.questionDisplay.style.display = "block"; 
                 this.loddenAnswerInput.style.display = "block";
-                this.setQuestionBtn.style.display = "block";                 
+                this.setQuestionBtn.style.display = "block";      
+                
+                //these need to be reset for when someone disconnects and the game restarts
+                this.questionDisplay.readOnly = false;
+                this.loddenAnswerInput.readOnly = false;                
             });
 
             this.socket.on("gameReady", (question) => {     
@@ -201,15 +221,18 @@
                 this.setQuestionBtn.style.display = "none";
                 this.questionDisplay.style.display = "block";   
                 this.questionDisplay.value = "Q: " + question;
-                this.questionDisplay.readOnly = "true";
-                this.loddenAnswerInput.readOnly = "true";
+                this.questionDisplay.readOnly = true;
+                this.loddenAnswerInput.readOnly = true;
+
+                //currentValue needs to be reset here for game after the initial one
+                this.currentValue = 0; 
             });
 
             this.socket.on("showPlayerControls", () => {     
                 
                 this.textInput.style.display = "initial";
                 this.sendBtn.style.display = "initial";
-                this.settleBtn.style.display = "initial";
+                this.settleBtn.style.display = "initial";                
             });
 
             this.socket.on("hidePlayerControls", () => {     
@@ -277,8 +300,8 @@
 
                 var value = this.textInput.value;                 
                 
-                this.textInput.value = "";
-                
+                this.textInput.value = ""; 
+
                 //Only the first digit was being used in the comparison, for example, it wasnt comparing "15" as a whole, instead it appeared to be only using the "1".
                 //Not entirely sure what was happening but this appears to have resolved any issues, could have just been the values were being stored as strings
                 if(Number(value) > Number(this.currentValue))
@@ -287,7 +310,7 @@
                 }
                 else
                 {
-                    this.textDisplay.value += "\n\nInvalid move, given value is below or equal to your opponents guess guess";
+                    this.textDisplay.value += "\n\nInvalid move, given value is below or equal to your opponents guess";
                 }
             },
 

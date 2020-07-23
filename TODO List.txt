@@ -10,7 +10,9 @@
 - Maybe all socket.on("") in the server should just call a function like I have done with createPlayer/group, find out what is standard  
 - Using groupIndex wont work on a large scale, not sure how much traffic would cause the failure but in theory a group could be removed from the groups array at the same time that someone is adding a member to a different group within the groups array, this could cause a user to be added to the wrong group since the index is changed by another group mid execution
 - GetGroupName() may be redundant, keep an eye on. If no unique needs come up then GetGroupIndex() may be enough on its own (some changes would be needed but at the moment the GetGroupName() function only seems to be a means to an end to get the groupIndex)
-
+- Need to decide how I want the game to flow once someone has DC'd
+	- Could just right away put the 2 remaining players back in the lobby and print the members of the group.
+	- Should also probs have a way to go back to the main menu and leave/join a new group
 
 
 Desired features:
@@ -19,9 +21,6 @@ Desired features:
 - Add the ability to start a new game after one is finished
 - Could be useful to keep a list of all moves server side, although only the most recent move for each player may do
 - Provide example questions (https://www.reddit.com/r/poker/comments/870v0d/whats_your_best_lodden_thinks_question/)
-- Informing group of disconnected users
-	-Must be a way to check if a current socket is connected, if not then just add something like player.connected = true and change this value at the 	time when a socket is disconnected.
-		-This will probs be the best way, I dont think there is a need to be scanning those arrays and checking for online sockets periodically when 		all sockets can be removed from the list right as they disconnect with the built in: socket.on("disconnect", () => { });
 - Notify player1/player2 when looden is inputting a question/answer
 - Make function SendToGroup(Group, emitMessage, params) (Will this even work??? Did I forget the emitMessage needs to be in quotation marks, a variable cant be used on its own with no quotation marks? Confirm this is true first.
 - The "settle" button should only be shown once the first player has made a prediction
