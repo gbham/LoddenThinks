@@ -1,3 +1,5 @@
+const { isNullOrUndefined } = require("util");
+
 const Express = require("express")();
 const Http = require("http").Server(Express);
 const Socketio = require("socket.io")(Http);
@@ -21,14 +23,15 @@ Socketio.on("connection", socket => {
         var disPlayerGroupIndex = -1;
         var disPlayerPosInGroup;
 
-        //Get the name of the disconnected player
+        //Get the name of the disconnected player, also remove them from allSockets[]
         for(var i = 0; i < allSockets.length; i++)
         {                
             if(allSockets[i].socket.id == socket.id)
             {                
                 playerName = allSockets[i].name;
+                allSockets.splice(i, 1);
             }
-        } 
+        }         
 
         //If that player is in a group then get the groupIndex
         for(var i = 0; i < groups.length; i++)
@@ -63,6 +66,15 @@ Socketio.on("connection", socket => {
 
             ResetPlayerValuesToDefault(groupIndex);            
         }
+
+        //Remove player from players[] (The position of this is key as GetGroupName() uses players[])
+        for(var i = 0; i < players.length; i++)
+        {       
+            if(players[i].name == playerName)
+            {                       
+                players.splice(i, 1);
+            }
+        } 
     });
 
     //The input validation (only checking if player guess is higher than previous player guess) is done at client level for now
@@ -311,6 +323,73 @@ Socketio.on("connection", socket => {
     socket.on("joinGroup", (groupName) => {                        
         JoinGroup(socket, groupName);               
     });
+
+    socket.on("is username available?", (username) => {  
+
+        var answer = CheckIfUsernameIsAvailable(username);       
+
+        socket.emit("usernameAvailable?", answer); 
+    });
+
+    socket.on("is group name available?", (groupName) => {  
+
+        var answer = CheckIfGroupNameIsAvailable(groupName);        
+
+        socket.emit("groupNameAvailable?", answer);
+    });  
+
+    socket.on("does group exist and have space?", (groupName) => {  
+        
+        var answer = CheckIfGroupNameIsAvailable(groupName);
+
+        if(answer == false) { answer = CheckIfGroupHasSpace(groupName)}
+
+        socket.emit("groupJoinable?", answer);
+    });  
+
+
+
+    function CheckIfGroupNameIsAvailable(groupName)
+    {    
+        if(groupName=="") { return false;}
+
+        for(var i = 0; i < groups.length; i++)
+        {                      
+            if(groups[i][0] == groupName)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function CheckIfGroupHasSpace(groupName)
+    {    
+        var groupIndex = GetGroupIndex(groupName);
+       
+        if(groups[groupIndex].length < 4)
+        {
+            return true;
+        }       
+
+        return false;
+    }
+
+    function CheckIfUsernameIsAvailable(username)
+    {    
+        if(username=="") { return false;}
+
+        for(var i = 0; i < players.length; i++)
+        {                      
+            if(players[i].name == username)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
     
     function GetPlayerSocketByRole(groupIndex, role)
     {
@@ -401,6 +480,8 @@ Socketio.on("connection", socket => {
 
     function CreatePlayer(socket, name) 
     {
+        console.log("name = " + name);
+
         //ensure all are needed
         var player = {
             socketID: socket.id,
@@ -423,11 +504,11 @@ Socketio.on("connection", socket => {
         
         players.push(player);   
 
+        socket.emit("printUsername", player.name);
         socket.emit("hideCreatePlayerControls");
         socket.emit("showCreateAndJoinGroupControls"); 
     }
 
-    //Currently no validation done on whether the group is a duplicate
     function CreateGroup(socket, groupName)  
     {  
         var player = GetDesiredPlayer(socket);
@@ -441,13 +522,14 @@ Socketio.on("connection", socket => {
         var groupIndex = GetGroupIndex(groupName);
 
         playerSocket.socket.emit("printGroup", groups[groupIndex]);
+        socket.emit("hideCreateAndJoinGroupControls");
         
     }
 
-    //Currently no validation done on whether the group exists or has space   
+    //Currently no validation done on whether the group exists  
     function JoinGroup(socket, groupName)  
     {
-        var player = GetDesiredPlayer(socket);
+        var player = GetDesiredPlayer(socket);        
 
         player.group = groupName; 
 
@@ -460,7 +542,9 @@ Socketio.on("connection", socket => {
         for(var i = 0; i < desiredGrpSockets.length; i++)
         {                
             desiredGrpSockets[i].socket.emit("printGroup", groups[groupIndex]);
-        }          
+        }     
+        
+        socket.emit("hideCreateAndJoinGroupControls");
         
         CheckIfGroupIsFull(groupIndex);         
     }

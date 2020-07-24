@@ -266,13 +266,17 @@
             });
 
             this.socket.on("printGroup", (group) => {                
-                this.textDisplay.value = "\n Group " + group[0] + ":";
+                this.textDisplay.value = "\nGroup " + group[0] + ":\n";
                 
                 //Start at index 1 since position 0 is the name of the group
                 for(var i = 1; i < group.length; i ++)
                 {
                     this.textDisplay.value += "\n" + group[i].name;
                 }                               
+            });
+
+            this.socket.on("printUsername", (username) => {                
+                this.textDisplay.value = "\n" + username + " has connected";
             });
 
             this.socket.on("hideCreatePlayerControls", () => {
@@ -284,6 +288,12 @@
                 this.createGroupBtn.style.display = "block";
                 this.joinGroupBtn.style.display = "block";
                 this.userGroupInput.style.display = "block"; 
+            });
+
+            this.socket.on("hideCreateAndJoinGroupControls", () => { 
+                this.createGroupBtn.style.display = "none";
+                this.joinGroupBtn.style.display = "none";
+                this.userGroupInput.style.display = "none"; 
             });
 
             this.socket.on("showRoleSelectionControls", () => {               
@@ -336,29 +346,63 @@
 
                 this.socket.emit("setQuestionAndAnswer", question, answer);
             },
-
-            //Currently no validation done on whether the username is a duplicate
+            
             createPlayer() {
-                var name = this.$refs.userInfoInput.value;
+                var username = this.$refs.userInfoInput.value;   
+                var textDisplay = this.$refs.textDisplay;                
 
-                this.socket.emit("createPlayer", name);
+                this.socket.emit("is username available?", username); 
+
+                this.socket.once("usernameAvailable?", (answer) =>
+                {                    
+                    if(answer)
+                    {      
+                        this.socket.emit("createPlayer", username);
+                    }
+                    else
+                    {
+                        textDisplay.value = "\n***Username unavailable***"
+                    }
+                }); 
             },
 
-            //Currently no validation done on whether the group is a duplicate
             createGroup() {
                 var groupName = this.$refs.userGroupInput.value;
+                var textDisplay = this.$refs.textDisplay;
 
-                this.socket.emit("createGroup", groupName);
+                this.socket.emit("is group name available?", groupName);                
+
+                this.socket.on("groupNameAvailable?", (answer) =>
+                {                    
+                    if(answer)
+                    {
+                        this.socket.emit("createGroup", groupName);
+                    }
+                    else
+                    {
+                        textDisplay.value = "\n***Group name unavailable***"
+                    }
+                });       
             },
 
             //Currently no validation done on whether the group exists
             joinGroup() {
                 var groupName = this.$refs.userGroupInput.value;
+                var textDisplay = this.$refs.textDisplay;
+                
+                this.socket.emit("does group exist and have space?", groupName);                
 
-                //have something like this: (check if it exists and if It is full)
-                // this.socket.emit("IsGroupValid", groupName) - MAYBE USE THE SOCKET.EMIT QUESTION THING I SAVED IN NOTES
-
-                this.socket.emit("joinGroup", groupName);
+                this.socket.on("groupJoinable?", (answer) =>
+                {                    
+                    if(answer)
+                    {
+                        this.socket.emit("joinGroup", groupName);
+                    }
+                    else
+                    {
+                        textDisplay.value = "\n***Unable to join group***"
+                    }
+                });  
             }
         }
     }

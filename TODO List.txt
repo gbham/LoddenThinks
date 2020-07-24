@@ -13,7 +13,11 @@
 - Need to decide how I want the game to flow once someone has DC'd
 	- Could just right away put the 2 remaining players back in the lobby and print the members of the group.
 	- Should also probs have a way to go back to the main menu and leave/join a new group
-
+- Use the rooms feature to group together sockets
+- Dont think the scenario is covered: when the final person remaining in a group leaves, the the group should be removed from groups[] so the name can be used again
+- Maybe create Stackoverflow question: this.socket.once("usernameAvailable?", (answer) => {.......}
+	-Had to use socket.once instead of socket.on, which appears to have fixed the issue but still unsure on what is causing this and how this fixed it. Scenario is: User enters invalid username, everything acts as intended, user is informed it is unavailable. Now, when a valid username is entered afterwards, it doesnt just run "this.socket.emit("createPlayer", username)" once, it appears to run it twice, somehow?? The first time with the previous invalid username and a second time with the current valid username just entered (I am printing username when CreatePlayer() server-side function is ran). The thing is this section of the code shouldnt be entered unless the username is valid??? Also using socket.once would make me think the invalid username, which is the first to enter the server-side CreatePlayer() function would have been the one that saved?
+                
 
 Desired features:
 
@@ -26,9 +30,10 @@ Desired features:
 - The "settle" button should only be shown once the first player has made a prediction
 - Have a textarea at the top to show username
 - Add a instructions section
-- Validation needed for:
-	-Being able to click create player or group with no text entered
-	-Allowing a duplicate username/group to be created
-	-Allowing someone to join a group that doesnt exist or is full
+- Validation needed for: (keep in mind the weird stuff going with CreatePlayer() that has appeared to have been fixed by using socket.once)
+	-(done)Being able to click create player or group with no text entered
+	-(done)Allowing a duplicate username/group to be created
+	-(done)Allowing someone to join a group that is full
+	-Allowing someone to join a group that doesnt exist
 	-Decimals are valid
 	-User input accepting any type of character
